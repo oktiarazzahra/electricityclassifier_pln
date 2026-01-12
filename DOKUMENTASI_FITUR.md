@@ -6,6 +6,55 @@ Sistem ini menggunakan **27 fitur** untuk mendeteksi pola pencurian listrik. Fit
 1. **13 Fitur Statistik Dasar** - Menganalisis pola pemakaian secara keseluruhan
 2. **14 Fitur Temporal** - Mendeteksi PERUBAHAN pola dari waktu ke waktu
 
+---
+
+## ⚠️ ATURAN ELIGIBILITY: MINIMAL 12 BULAN DATA AKTIF
+
+### Mengapa Diperlukan Minimal 12 Bulan?
+
+Model deteksi pencurian listrik **HANYA boleh memprediksi** pelanggan yang memiliki **minimal 12 bulan data konsumsi AKTIF berturut-turut** karena:
+
+1. **Pola pencurian membutuhkan observasi jangka panjang** untuk dibedakan dari pola normal
+2. Fitur seperti `year_change_pct` membutuhkan perbandingan tahun pertama vs tahun terakhir
+3. **Risiko tinggi false positive/negative** jika data kurang dari 12 bulan
+
+### Proses Filtering Eligibility:
+
+```
+LANGKAH 1: Buang pelanggan yang sudah berhenti
+           (kolom bulan terakhir = N/A)
+           → Status: INACTIVE_STOPPED
+           
+LANGKAH 2: Trim ke periode aktif
+           (dari bulan pertama bukan N/A sampai bulan terakhir bukan N/A)
+           
+LANGKAH 3: Hitung jumlah bulan aktif
+           active_months = end_month - start_month + 1
+           
+LANGKAH 4: Filter berdasarkan eligibility
+           - active_months >= 12 → ELIGIBLE (bisa diprediksi)
+           - active_months < 12  → INSUFFICIENT_HISTORY (tidak diprediksi)
+```
+
+### Status Eligibility:
+
+| Status | Deskripsi | Aksi |
+|--------|-----------|------|
+| ✅ ELIGIBLE | ≥12 bulan data aktif, masih berlangganan | **DIPREDIKSI** oleh model |
+| ⚠️ INSUFFICIENT_HISTORY | <12 bulan data aktif (pelanggan baru) | **TIDAK DIPREDIKSI** - tunggu sampai cukup data |
+| ❌ INACTIVE_STOPPED | Bulan terakhir = N/A (sudah berhenti) | **TIDAK DIPREDIKSI** - tidak relevan |
+
+### Statistik dari Data:
+
+| Kategori | Jumlah | Persentase |
+|----------|--------|------------|
+| ELIGIBLE | 132,738 | 86.8% |
+| INSUFFICIENT_HISTORY | 5,916 | 3.9% |
+| INACTIVE_STOPPED | 14,320 | 9.4% |
+| **Total** | **152,974** | **100%** |
+
+---
+
 ### ⚠️ PENTING: Mengapa Perlu Fitur Temporal?
 
 Data yang tersedia adalah history pemakaian dari **2021 hingga 2026** (59 bulan). Pencuri tidak mencuri sejak awal - mereka mungkin:
