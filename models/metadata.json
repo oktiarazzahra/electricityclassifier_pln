@@ -1,0 +1,36 @@
+{
+  "model_type": "Hybrid Semi-Supervised (IsoForest + RF + XGBoost)",
+  "created_date": "2026-01-12 11:49:17",
+  "features": [
+    "usage_mean",
+    "usage_std",
+    "usage_min",
+    "usage_max",
+    "usage_range",
+    "coefficient_variation",
+    "zero_usage_count",
+    "max_drop",
+    "trend_slope",
+    "recent_disconnect",
+    "inactive_months",
+    "ue_encoded",
+    "ue_fraud_risk"
+  ],
+  "n_features": 13,
+  "training_samples": 10000,
+  "recall_on_known_fraud": 0.975609756097561,
+  "models": {
+    "isolation_forest": {
+      "n_estimators": 200,
+      "contamination": 0.01
+    },
+    "random_forest": {
+      "n_estimators": 300,
+      "max_depth": 15
+    },
+    "xgboost": {
+      "n_estimators": 200,
+      "max_depth": 8
+    }
+  }
+}
